@@ -28,6 +28,29 @@ RenderFlag::RenderFlag(const Options& options) : Application(options) {
     // _stars[i].reset(new Star(ndc_position, rotation_in_radians, size_of_star,
     // aspect_of_the_window));
     // ---------------------------------------------------------------
+    float aspect_of_the_window = static_cast<float>(options.windowWidth) / static_cast<float>(options.windowHeight);
+    float rotation_in_radians[5];
+    glm::vec2 ndc_position[5];
+    float size_of_star = 0.05f;
+
+    rotation_in_radians[0] = M_PI / 10.0f + atan(0.6);
+    ndc_position[0] = glm::vec2(-1.0f / 3.0f, 0.8f);
+
+    rotation_in_radians[1] = M_PI / 10.0f + atan2(1 ,7 );
+    ndc_position[1] = glm::vec2(-0.2f, 0.6f);
+
+    rotation_in_radians[2] = M_PI / 10.0f - atan2(2, 7);
+    ndc_position[2] = glm::vec2(-0.2f, 0.3f);
+
+    rotation_in_radians[3] = M_PI / 10.0f - atan(0.8);
+    ndc_position[3] = glm::vec2(-1.0f / 3.0f, 0.1f);
+
+    rotation_in_radians[4] = 0;
+    ndc_position[4] = glm::vec2(-2.0f / 3.0f , 0.5f);
+
+    for (int i = 0; i < 4; i++)
+        _stars[i].reset(new Star(ndc_position[i], rotation_in_radians[i], size_of_star, aspect_of_the_window));
+    _stars[4].reset(new Star(ndc_position[4], rotation_in_radians[4], size_of_star * 3.0f, aspect_of_the_window));
 }
 
 void RenderFlag::handleInput() {
