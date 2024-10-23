@@ -21,13 +21,6 @@ RenderFlag::RenderFlag(const Options& options) : Application(options) {
     _starShader->attachFragmentShader(fsCode);
     _starShader->link();
 
-    // TODO: create 5 stars
-    // hint: aspect_of_the_window = _windowWidth / _windowHeight
-    // write your code here
-    // ---------------------------------------------------------------
-    // _stars[i].reset(new Star(ndc_position, rotation_in_radians, size_of_star,
-    // aspect_of_the_window));
-    // ---------------------------------------------------------------
     float aspect_of_the_window = static_cast<float>(options.windowWidth) / static_cast<float>(options.windowHeight);
     float rotation_in_radians[5];
     glm::vec2 ndc_position[5];
