@@ -89,24 +89,18 @@ void Transformation::handleInput() {
     const float angulerVelocity = 1.0f;
     const float scaleRate = 0.2f;
 
-    // TODO: update transformation attributes
-    // write your code here
-    // --------------------------------------------------
-    // _positions[i] = ...
-    // _rotateAngles[i] = ...
-    // _scales[i] = ...
-    // --------------------------------------------------
-        // 获取当前时间来创建周期性效果
-        float time = glfwGetTime();
+    // 获取当前时间来创建周期性效果
+    float time = glfwGetTime();
 
-        // 处理最左边兔子的平移：沿Y轴周期性移动
-        _positions[0] = glm::vec3(-10.0f, 0.0f, 0.0f) + sin(time) * velocity;
-        // 处理中间兔子的旋转：围绕Y轴周期性旋转
-        _rotateAngles[1] = angulerVelocity * time;
+    // 处理最左边兔子的平移：沿Y轴周期性移动
+    _positions[0] = glm::vec3(-10.0f, 0.0f, 0.0f) + sin(time) * velocity;
 
-        // 处理最右边兔子的缩放：周期性缩放
-        float scaleFactor = sin(time) * scaleRate;
-        _scales[2] = glm::vec3(1.0f, 1.0f, 1.0f) + glm::vec3(scaleFactor, scaleFactor, scaleFactor);
+    // 处理中间兔子的旋转：围绕Y轴周期性旋转
+    _rotateAngles[1] = angulerVelocity * time;
+
+    // 处理最右边兔子的缩放：周期性缩放
+    float scaleFactor = sin(time) * scaleRate;
+    _scales[2] = glm::vec3(1.0f, 1.0f, 1.0f) + glm::vec3(scaleFactor, scaleFactor, scaleFactor);
 }
 
 void Transformation::renderFrame() {
@@ -144,13 +138,7 @@ void Transformation::renderFrame() {
     for (std::size_t i = 0; i < _bunnies.size(); ++i) {
         _shader->setUniformMat4("projection", projection);
         _shader->setUniformMat4("view", view);
-        // model matrix transform the homogenous coodinates from
-        // model space (raw vertex data of the model) to world space, depending on following
-        // parametes:
-        // TODO: calculate the translation, rotation, scale matrices
-        // change your code here
-        // -----------------------------------------------
-        // @translation
+       
         glm::mat4 translation = glm::mat4(1.0f);
         // @rotation
         glm::mat4 rotation = glm::mat4(1.0f);
