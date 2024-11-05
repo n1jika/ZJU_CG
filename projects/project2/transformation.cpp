@@ -96,6 +96,17 @@ void Transformation::handleInput() {
     // _rotateAngles[i] = ...
     // _scales[i] = ...
     // --------------------------------------------------
+        // 获取当前时间来创建周期性效果
+        float time = glfwGetTime();
+
+        // 处理最左边兔子的平移：沿Y轴周期性移动
+        _positions[0] = glm::vec3(-10.0f, 0.0f, 0.0f) + sin(time) * velocity;
+        // 处理中间兔子的旋转：围绕Y轴周期性旋转
+        _rotateAngles[1] = angulerVelocity * time;
+
+        // 处理最右边兔子的缩放：周期性缩放
+        float scaleFactor = sin(time) * scaleRate;
+        _scales[2] = glm::vec3(1.0f, 1.0f, 1.0f) + glm::vec3(scaleFactor, scaleFactor, scaleFactor);
 }
 
 void Transformation::renderFrame() {
@@ -146,6 +157,12 @@ void Transformation::renderFrame() {
         // @scale
         glm::mat4 scale = glm::mat4(1.0f);
         // ------------------------------------------------
+        translation = glm::translate(glm::mat4(1.0f), _positions[i]);
+
+        rotation = glm::rotate(glm::mat4(1.0f), _rotateAngles[i], _rotateAxis[i]);
+
+        scale = glm::scale(glm::mat4(1.0f), _scales[i]);
+
 
         glm::mat4 model = translation * rotation * scale;
         _shader->setUniformMat4("model", model);
