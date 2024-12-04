@@ -21,6 +21,7 @@ Transformation::Transformation(const Options& options) : Application(options) {
     std::string::size_type index = modelPath.find_last_of("/");
     std::string mtlBaseDir = modelPath.substr(0, index + 1);
 
+    std::string modelPath2 = "bunny.obj";
     if (!tinyobj::LoadObj(
             &attrib, &shapes, &materials, &warn, &err, modelPath.c_str(), mtlBaseDir.c_str())) {
         throw std::runtime_error("load " + modelPath + " failure: " + err);

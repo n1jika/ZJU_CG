@@ -58,6 +58,7 @@ void SceneRoaming::handleInput() {
         // -------------------------------------------------
         // camera->transform.position = ...;
         // -------------------------------------------------
+        camera->transform.position += cameraMoveSpeed * camera->transform.getFront();
     }
 
     if (_input.keyboard.keyStates[GLFW_KEY_A] != GLFW_RELEASE) {
@@ -67,6 +68,7 @@ void SceneRoaming::handleInput() {
         // -------------------------------------------------
         // camera->transform.position = ...;
         // -------------------------------------------------
+        camera->transform.position -= cameraMoveSpeed * camera->transform.getRight();
     }
 
     if (_input.keyboard.keyStates[GLFW_KEY_S] != GLFW_RELEASE) {
@@ -76,6 +78,7 @@ void SceneRoaming::handleInput() {
         // -------------------------------------------------
         // camera->transform.position = ...;
         // -------------------------------------------------
+        camera->transform.position -= cameraMoveSpeed * camera->transform.getFront();
     }
 
     if (_input.keyboard.keyStates[GLFW_KEY_D] != GLFW_RELEASE) {
@@ -85,6 +88,7 @@ void SceneRoaming::handleInput() {
         // -------------------------------------------------
         // camera->transform.position = ...;
         // -------------------------------------------------
+        camera->transform.position += cameraMoveSpeed * camera->transform.getRight();
     }
 
     if (_input.mouse.move.xNow != _input.mouse.move.xOld) {
@@ -96,6 +100,9 @@ void SceneRoaming::handleInput() {
         // -----------------------------------------------------------------------------
         // camera->transform.rotation = ...
         // -----------------------------------------------------------------------------
+        float mouseMovementX = _input.mouse.move.xNow - _input.mouse.move.xOld;
+        glm::quat rotation = glm::angleAxis(-cameraRotateSpeed * mouseMovementX, glm::vec3(0.0f, 1.0f, 0.0f));
+        camera->transform.rotation = glm::normalize(rotation * camera->transform.rotation);
     }
 
     if (_input.mouse.move.yNow != _input.mouse.move.yOld) {
@@ -107,6 +114,9 @@ void SceneRoaming::handleInput() {
         // -----------------------------------------------------------------------------
         // camera->transform.rotation = ...
         // -----------------------------------------------------------------------------
+        float mouseMovementY = _input.mouse.move.yNow - _input.mouse.move.yOld;
+        glm::quat rotation = glm::angleAxis(-cameraRotateSpeed * mouseMovementY, camera->transform.getRight());
+        camera->transform.rotation = glm::normalize(camera->transform.rotation * rotation);
     }
 
     _input.forwardState();

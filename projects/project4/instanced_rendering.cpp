@@ -55,7 +55,19 @@ InstancedRendering::InstancedRendering(const Options& options) : Application(opt
     // ---------------------------------------------------------
     // glXXX(_instanceBuffer); ...
     // ---------------------------------------------------------
+    glGenBuffers(1, &_instanceBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, _instanceBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * _modelMatrices.size(), &_modelMatrices[0], GL_STATIC_DRAW);
 
+    glBindVertexArray(_asternoid->getVao());
+    GLuint mat4AttribLoc = 3; // 顶点着色器中的aInstanceMatrix
+    for (GLuint i = 0; i < 4; ++i) {
+        glVertexAttribPointer(mat4AttribLoc + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)(sizeof(GLfloat) * 4 * i));
+        glEnableVertexAttribArray(mat4AttribLoc + i);
+        glVertexAttribDivisor(mat4AttribLoc + i, 1); 
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
     // init imGUI
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -168,7 +180,8 @@ void InstancedRendering::renderFrame() {
 
     if (_wireframe) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    } else {
+    }
+    else {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 
@@ -205,7 +218,11 @@ void InstancedRendering::renderFrame() {
         // ...
         // glDraw...(...);
         // ---------------------------------------------------------
+        glBindVertexArray(_asternoid->getVao());
 
+        glDrawElementsInstanced(GL_TRIANGLES, _asternoid->getVertexCount(), GL_UNSIGNED_INT, 0, _amount);
+
+        glBindVertexArray(0);
         break;
     }
 
@@ -218,7 +235,8 @@ void InstancedRendering::renderFrame() {
 
     if (!ImGui::Begin("Control Panel", nullptr, flags)) {
         ImGui::End();
-    } else {
+    }
+    else {
         ImGui::Text("render method");
         ImGui::Separator();
         ImGui::RadioButton("ordinary rendering", (int*)&_renderMode, (int)(RenderMode::Ordinary));
