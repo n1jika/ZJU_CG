@@ -222,9 +222,86 @@ void ShadingTutorial::initPhongShader() {
     // ------------------------------------------------------------
     const char* fsCode =
         "#version 330 core\n"
+        "in vec3 fPosition;\n"
+        "in vec3 fNormal;\n"
         "out vec4 color;\n"
+
+        // material data structure declaration
+        "struct Material {\n"
+        "    vec3 ka; // ambient reflectivity\n"
+        "    vec3 kd; // diffuse reflectivity\n"
+        "    vec3 ks; // specular reflectivity\n"
+        "    float ns; // shininess\n"
+        "};\n"
+
+        // light data structure declaration
+        "struct DirectionalLight {\n"
+        "    vec3 direction;\n"
+        "    vec3 color;\n"
+        "    float intensity;\n"
+        "};\n"
+
+        "struct AmbientLight {\n"
+        "    vec3 color;\n"
+        "    float intensity;\n"
+        "};\n"
+
+        "struct Spotlight {\n"
+        "    vec3 position;\n"
+        "    vec3 direction;\n"
+        "    vec3 color;\n"
+        "    float intensity;\n"
+        "    float angle;\n"
+        "    float kc; \n"
+        "    float kl;\n"
+        "    float kq;\n"
+        "};\n"
+
+        // uniform variables
+        "uniform Material material;\n"
+        "uniform DirectionalLight directionalLight;\n"
+        "uniform AmbientLight ambientLight;\n"
+        "uniform Spotlight spotLight;\n"
+        "uniform vec3 cameraPos; // camera position in world space\n"
+        "uniform vec3 lightPos;\n"
+        "uniform vec3 objectColor;\n"
+        "uniform vec3 lightColor;\n"
+        
+        "vec3 calcDirectionalLight(vec3 normal) {\n"
+        "    vec3 lightDir = normalize(-directionalLight.direction);\n"
+        "    vec3 diffuse = directionalLight.color * max(dot(lightDir, normal), 0.0f) * "
+        "material.kd;\n"
+        "    return directionalLight.intensity * diffuse ;\n"
+        "}\n"
+
+        "vec3 calcSpotLight(vec3 normal) {\n"
+        "    vec3 lightDir = normalize(spotLight.position - fPosition);\n"
+        "    float theta = acos(-dot(lightDir, normalize(spotLight.direction)));\n"
+        "    if (theta > spotLight.angle) {\n"
+        "        return vec3(0.0f, 0.0f, 0.0f);\n"
+        "    }\n"
+        "    vec3 diffuse = spotLight.color * max(dot(lightDir, normal), 0.0f) * material.kd;\n"
+        "    float distance = length(spotLight.position - fPosition);\n"
+        "    float attenuation = 1.0f / (spotLight.kc + spotLight.kl * distance + spotLight.kq * "
+        "distance * distance);\n"
+        "    return spotLight.intensity * attenuation * diffuse;\n"
+        "}\n"
+
+        "vec3 calcSpecularLight(vec3 normal) {\n"
+        "    vec3 lightDir = normalize(lightPos - fPosition);"
+        "    vec3 cameraDir = normalize(cameraPos - fPosition);"
+        "    vec3 reflectDir = reflect(-lightDir, normal);"
+        "    float spec = pow(max(dot(cameraDir, reflectDir), 0.0), material.ns);"
+        "    return material.ks * spec * lightColor;"
+        "}\n"
+
         "void main() {\n"
-        "    color = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n"
+        "    vec3 normal = normalize(fNormal);\n"
+        "    vec3 diffuse = calcDirectionalLight(normal) + calcSpotLight(normal);\n"
+        "    vec3 ambient = material.ka * ambientLight.color * ambientLight.intensity;\n"
+        "    vec3 specular = calcSpecularLight(normal);"
+        "    vec3 result = ambient + diffuse + specular;"
+        "    color = vec4(result,1.0f);"
         "}\n";
     // ------------------------------------------------------------
 
@@ -295,19 +372,36 @@ void ShadingTutorial::renderFrame() {
         // ----------------------------------------------------------------
         // _phongShader->set...
         // ----------------------------------------------------------------
-
+        _phongShader->setUniformVec3("cameraPos", _camera->transform.position);
         // 3. TODO: transfer the material attributes to the shader
         // write your code here
         // -----------------------------------------------------------
         // _phongShader->set...
         // -----------------------------------------------------------
-
+        _phongShader->setUniformVec3("material.ka", _phongMaterial->ka);
+        _phongShader->setUniformVec3("material.kd", _phongMaterial->kd);
+        _phongShader->setUniformVec3("material.ks", _phongMaterial->ks);
+        _phongShader->setUniformFloat("material.ns", _phongMaterial->ns);
         // 4. TODO: transfer the light attributes to the shader
         // write your code here
         // -----------------------------------------------------------
         // _phongShader->set...
         // -----------------------------------------------------------
+        _phongShader->setUniformVec3("ambientLight.color", _ambientLight->color);
+        _phongShader->setUniformFloat("ambientLight.intensity", _ambientLight->intensity);
 
+        _phongShader->setUniformVec3("directionalLight.direction", _directionalLight->transform.getFront());
+        _phongShader->setUniformFloat("directionalLight.intensity", _directionalLight->intensity);
+        _phongShader->setUniformVec3("directionalLight.color", _directionalLight->color);
+
+        _phongShader->setUniformVec3("spotLight.position", _spotLight->transform.position);
+        _phongShader->setUniformVec3("spotLight.direction", _spotLight->transform.getFront());
+        _phongShader->setUniformFloat("spotLight.intensity", _spotLight->intensity);
+        _phongShader->setUniformVec3("spotLight.color", _spotLight->color);
+        _phongShader->setUniformFloat("spotLight.angle", _spotLight->angle);
+        _phongShader->setUniformFloat("spotLight.kc", _spotLight->kc);
+        _phongShader->setUniformFloat("spotLight.kl", _spotLight->kl);
+        _phongShader->setUniformFloat("spotLight.kq", _spotLight->kq);
         break;
     }
 
