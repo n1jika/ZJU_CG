@@ -91,6 +91,25 @@ void SkyBox::draw(const glm::mat4& projection, const glm::mat4& view) {
     // -----------------------------------------------
     // ...
     // -----------------------------------------------
+    glDepthFunc(GL_LEQUAL);
+
+    _shader->use();
+
+    glm::mat4 viewNoTranslation = glm::mat4(glm::mat3(view));
+    _shader->setUniformMat4("projection", projection);
+    _shader->setUniformMat4("view", viewNoTranslation);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, _texture->getHandle());
+    _shader->setUniformInt("cubemap", 0);
+
+    glBindVertexArray(_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+
+    _shader->unuse();
+
+    glDepthFunc(GL_LESS);
 }
 
 void SkyBox::cleanup() {

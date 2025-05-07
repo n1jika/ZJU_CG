@@ -160,7 +160,18 @@ void TextureMapping::initBlendShader() {
         "uniform sampler2D mapKds[2];\n"
 
         "void main() {\n"
-        "    color = vec4(material.kds[0], 1.0f);\n"
+        "    vec4 color1 = texture(mapKds[0], fTexCoord) * vec4(material.kds[0], 1.0f);\n"
+        "    vec4 color2 = texture(mapKds[1], fTexCoord) * vec4(material.kds[1], 1.0f);\n"
+
+        "    vec4 blendedColor = mix(color1, color2, material.blend);\n"
+
+        "    vec3 normal = normalize(fNormal);\n"
+        "    vec3 lightDir = normalize(-light.direction);\n"
+        "    float lambert = max(dot(normal, lightDir), 0.0);\n"
+
+        "    vec3 lighting = lambert * light.color * light.intensity;\n"
+
+        "    color = vec4(blendedColor.rgb * lighting, blendedColor.a);\n"
         "}\n";
     //----------------------------------------------------------------
 
@@ -202,7 +213,14 @@ void TextureMapping::initCheckerShader() {
         "uniform Material material;\n"
 
         "void main() {\n"
-        "    color = vec4(material.colors[0], 1.0f);\n"
+
+        "    int x = int(fTexCoord.x * material.repeat);\n"
+        "    int y = int(fTexCoord.y * material.repeat);\n"
+
+        "    bool isWhite = (x + y) % 2 == 0;\n"
+        "    vec3 checkerColor = isWhite ? material.colors[0] : material.colors[1];\n"
+
+        "    color = vec4(checkerColor, 1.0f);\n"
         "}\n";
     //----------------------------------------------------------------
 
@@ -278,6 +296,10 @@ void TextureMapping::renderFrame() {
         //----------------------------------------------------------------
         // ...
         //----------------------------------------------------------------
+        _blendMaterial->mapKds[0]->bind(0);
+        _blendMaterial->mapKds[1]->bind(1);
+        _blendShader->setUniformInt("mapKds[0]", 0);
+        _blendShader->setUniformInt("mapKds[1]", 1);
 
         break;
     case RenderMode::Checker:
